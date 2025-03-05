@@ -1,0 +1,11 @@
+{
+	"name": "Vrab",
+	"version_number": "1.0.0",
+	"website_url": "https://github.com/pseudopulse/Vrab",
+	"description": "Adds the simulacrum vrab as a playable character.",
+	"dependencies": [
+		"bbepis-BepInExPack-5.4.9",
+		"RiskofThunder-HookGenPatcher-1.2.1",
+		"tristanmcpherson-R2API-5.0.5"
+	]
+}
