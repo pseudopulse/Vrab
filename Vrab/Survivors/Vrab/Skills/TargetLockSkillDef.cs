@@ -34,7 +34,7 @@ namespace Vrab.Skills {
 
         public override bool IsReady([NotNull] GenericSkill skillSlot)
         {
-            return base.IsReady(skillSlot) && skillSlot.skillInstanceData != null && (skillSlot.skillInstanceData as TargetLockInstanceData).tracker.target && skillSlot.characterBody.characterMotor.isGrounded;
+            return base.IsReady(skillSlot) && skillSlot.skillInstanceData != null && (skillSlot.skillInstanceData as TargetLockInstanceData).tracker.target && !(skillSlot.skillInstanceData as TargetLockInstanceData).tracker.meter.drifting;
         }
     }
 

@@ -5,7 +5,7 @@ namespace Vrab.Skills {
     {
         public override string Name => "Analyze";
 
-        public override string Description => "<style=cIsDamage>Convert</style> nearby projectiles into <style=cIsUtility>seeking bolts</style> for <style=cIsDamage>800% damage</style> at each location. <style=cIsUtility>Gain 7% data per analyzed projectile.</style>".AutoFormat();
+        public override string Description => "<style=cIsDamage>Convert</style> nearby projectiles into <style=cIsUtility>seeking bolts</style> for <style=cIsDamage>600% damage</style> at each location. <style=cIsUtility>Gain 5% data per analyzed projectile.</style>".AutoFormat();
 
         public override Type ActivationStateType => typeof(States.Analyze);
 

@@ -21,8 +21,6 @@ namespace Vrab.States {
 
             AkSoundEngine.PostEvent(Events.Play_voidDevastator_m2_secondary_explo, base.gameObject);
 
-            meter.SpendData(dataCost);
-
             if (NetworkServer.active) {
                 SphereSearch search = new();
                 search.mask = LayerIndex.entityPrecise.mask;
@@ -44,8 +42,20 @@ namespace Vrab.States {
                     body.AddTimedBuff(Survivor.bdOverload, buffDuration);
                 }
             }
+        }
 
-            outer.SetNextStateToMain();
+        public override void FixedUpdate()
+        {
+            base.FixedUpdate();
+
+            if (base.fixedAge >= 0.8f) {
+                outer.SetNextStateToMain();
+            }
+        }
+
+        public override InterruptPriority GetMinimumInterruptPriority()
+        {
+            return InterruptPriority.Stun;
         }
     }
 }

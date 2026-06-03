@@ -14,7 +14,7 @@ namespace Vrab.Skills {
         public override float Cooldown => 8f;
 
         public override Sprite Icon => Load<Sprite>("Simulate.png");
-        public override int StockToConsume => 1;
+        public override int StockToConsume => 0;
         public override int MaxStock => 1;
         public override bool FullRestockOnAssign => true;
         public override InterruptPriority InterruptPriority => InterruptPriority.PrioritySkill;

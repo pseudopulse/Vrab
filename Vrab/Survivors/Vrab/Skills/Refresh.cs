@@ -5,7 +5,7 @@ namespace Vrab.Skills {
     {
         public override string Name => "Refresh";
 
-        public override string Description => "Spend <style=cDeath>40% data</style> to release a pulse that <style=cIsVoid>overloads</style> ALL characters, <style=cIsUtility>boosting them</style> and <style=cIsDamage>resetting status duration</style>.".AutoFormat();
+        public override string Description => "Release a pulse that <style=cIsVoid>overloads</style> ALL characters, <style=cIsUtility>increasing offensive stats by 25%</style> and <style=cIsDamage>resetting status duration</style>.".AutoFormat();
 
         public override Type ActivationStateType => typeof(States.Refresh);
 
@@ -20,10 +20,5 @@ namespace Vrab.Skills {
         public override InterruptPriority InterruptPriority => InterruptPriority.PrioritySkill;
 
         public override string[] Keywords => new string[] { "KEYWORD_DATA", "KEYWORD_OVERLOAD" };
-
-        public override void CreateSkillDef()
-        {
-            base.skillDef = ScriptableObject.CreateInstance<RequireDataSkillDef>();
-        }
     }
 }

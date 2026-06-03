@@ -1,15 +1,20 @@
 using System;
+using System.Linq;
 using RoR2.HudOverlay;
 using RoR2.UI;
 using UnityEngine.UI;
+using static Vrab.States.Simulate;
 
 namespace Vrab {
     public class DataMeter : MonoBehaviour {
         public float Data = 0f;
         public float MaxData = 100f;
         public OverlayController controller;
-        public float errTime = 0f;
-        public float errPerct = 1f;
+        public TargetTracker tracker;
+        public bool shouldPreview = false;
+        public float previewAmount = 0f;
+        public bool drifting = false;
+        public CharacterBody cb;
 
         public void Start() {
             controller = HudOverlayManager.AddOverlay(base.gameObject, new OverlayCreationParams() {
@@ -17,11 +22,37 @@ namespace Vrab {
                 childLocatorEntry = "CrosshairExtras"
             });
             controller.onInstanceAdded += OnAdded;
+            tracker = GetComponent<TargetTracker>();
+            cb = GetComponent<CharacterBody>();
         }
 
         private void OnAdded(OverlayController controller, GameObject @object)
         {
             @object.GetComponent<CrosshairDataMeterSync>().meter = this;
+        }
+
+        public void FixedUpdate() {
+            if (tracker && tracker.targetHB) {
+                HealthComponent hc = tracker.targetHB.healthComponent;
+
+                if (hc.body.teamComponent.teamIndex == cb.teamComponent.teamIndex) {
+                    shouldPreview = false;
+                    previewAmount = 0f;
+                    return;
+                }
+                else {
+                    shouldPreview = true;
+
+                    float hp = hc.body.baseMaxHealth;
+                    float data = Math.Clamp(Util.Remap(hp, minHealth, maxHealth, minData, maxData), minData, maxData);
+
+                    previewAmount = Mathf.Clamp01(data / MaxData);
+                }
+            }
+            else {
+                shouldPreview = false;
+                previewAmount = 0f;
+            }
         }
 
         public void OnDestroy() {
@@ -55,6 +86,7 @@ namespace Vrab {
         public void Start() {
             controller = GetComponent<ImageFillController>();
             errorImage = controller.images[2];
+            controller.images = controller.images.Where(x => x != errorImage).ToArray();
             text = GetComponentInChildren<HGTextMeshProUGUI>();
         }
         public void Update() {
@@ -62,16 +94,17 @@ namespace Vrab {
                 return;
             }
 
-            if (meter.errTime > 0f) {
-                meter.errTime -= Time.fixedDeltaTime;
-                text.text = $"!ERR!MISSING\nDATA";
-                errorImage.fillAmount = meter.errPerct;
-                return;
+            if (meter.shouldPreview) {
+                errorImage.fillAmount = meter.previewAmount;
+                errorImage.enabled = true;
+            }
+            else {
+                errorImage.fillAmount = 0f;
+                errorImage.enabled = false;
             }
             
             controller.fillScalar = 1f;
             controller.SetTValue(meter.Data / meter.MaxData);
-            errorImage.fillAmount = 0f;
             text.text = $"{Mathf.Floor((meter.Data / meter.MaxData) * 100f)}%";
         }
     }

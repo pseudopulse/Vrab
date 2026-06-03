@@ -5,7 +5,7 @@ namespace Vrab.Skills {
     {
         public override string Name => "Deconstruct";
 
-        public override string Description => "Liquify a target for <style=cIsDamage>300% damage per second</style>. Damaging targets collects <style=cIsUtility>data</style>.".AutoFormat();
+        public override string Description => "Liquify a target for <style=cIsDamage>300% damage per second</style>. Damaging targets collects <style=cIsUtility>data</style>. May instead heal allied targets at the cost of <style=cIsUtility>data</style>.".AutoFormat();
 
         public override Type ActivationStateType => typeof(States.Deconstruct);
 

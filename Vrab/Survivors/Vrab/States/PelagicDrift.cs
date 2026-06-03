@@ -8,6 +8,8 @@ namespace Vrab.States {
         public float timer = 0f;
         public DataMeter meter;
         public float y = 0f;
+        public float timeSinceGrounded = 0f;
+        public Animator anim;
 
         public override void OnEnter()
         {
@@ -16,6 +18,7 @@ namespace Vrab.States {
             vfx = FindModelChild("SwimVFX").GetComponent<ParticleSystem>();
 
             meter = GetComponent<DataMeter>();
+            anim = GetModelAnimator();
         }
         public override void FixedUpdate()
         {
@@ -23,17 +26,25 @@ namespace Vrab.States {
 
             if (!base.isAuthority) return;
 
-            if (base.inputBank.jump.down && meter.Data > 0) {
+            if (base.inputBank.jump.down && base.characterMotor.isGrounded) {
+                timer = 1f;
+                timeSinceGrounded = 0f;
+                base.characterMotor.Motor.ForceUnground();
+            }
+
+            if (base.inputBank.jump.down && (meter.Data > 0 || timeSinceGrounded <= 0.7f)) {
                 if (!vfx.isPlaying) {
                     vfx.Play();
                 }
-                if (base.characterMotor.isGrounded) {
-                    timer = 1f;
-                    base.characterMotor.Motor.ForceUnground();
+
+                timeSinceGrounded += Time.fixedDeltaTime;
+                if (timeSinceGrounded >= 1f) {
+                    meter.SpendData(7f * Time.fixedDeltaTime * Mathf.Clamp01(timer * 0.5f));
+                    meter.drifting = true;
                 }
-                meter.SpendData(10f * Time.fixedDeltaTime * Mathf.Clamp01(timer * 0.5f));
+
                 timer += Time.fixedDeltaTime;
-                base.characterMotor.velocity.y = Mathf.SmoothStep(y, ascentSpeed, Mathf.Clamp01(timer * 0.5f));
+                base.characterMotor.velocity.y = Mathf.SmoothStep(y, ascentSpeed * Math.Max(4f - timeSinceGrounded * 5f, 1f), Mathf.Clamp01(timer * 0.5f));
             }
             else {
                 if (vfx.isPlaying) {
@@ -46,6 +57,7 @@ namespace Vrab.States {
                 }
 
                 y = base.characterMotor.velocity.y;
+                meter.drifting = false;
             }
         }
     }

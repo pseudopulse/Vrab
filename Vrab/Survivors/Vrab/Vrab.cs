@@ -14,8 +14,11 @@ namespace Vrab {
         thats so awesome we call that a vrab void crab what the fuck is that
 
         < ! > Deconstruct cannot miss, but may only be used on the ground.
+
         < ! > Analyze can collect large amounts of data while clearing out dangerous projectiles.
+
         < ! > Refresh can boost your holograms at the expense of boosting enemies caught in the blast.
+        
         < ! > To offset Deconstruct's middling damage, utilize your data to construct holograms of powerful enemies with Simulate.
         
         """;
@@ -73,6 +76,7 @@ namespace Vrab {
             SwapMaterial("mdlVoidWardCrabMouth", 3, Paths.Material.matVoidwardCrabMouth);
             SwapMaterial("mdlVoidWardCrabWardMetal", 4, Paths.Material.matArenaTrim);
             SwapMaterial("mdlVoidWardCrabWardSphere", 5, Paths.Material.matArenaTerrainGem);
+            Paths.Material.matArenaTerrainGem.SetFloat("_RampInfo", 0);
 
             // SKILLS
 
@@ -99,7 +103,7 @@ namespace Vrab {
             """);
 
             "KEYWORD_OVERLOAD".Add("""
-            <style=cKeywordName>Overload</style>Overloaded characters attack <style=cIsDamage>50%</style> faster and move <style=cIsDamage>100%</style> faster.
+            <style=cKeywordName>Overload</style>Overloaded characters attack and move <style=cIsDamage>25%</style> faster while gaining <style=cIsDamage>25%</style> increased damage.
             """);
 
             // TARGET VFX
@@ -195,7 +199,8 @@ namespace Vrab {
 
             if (self.HasBuff(bdOverload)) {
                 self.moveSpeed *= 1.25f;
-                self.attackSpeed *= 1.5f;
+                self.attackSpeed *= 1.25f;
+                self.damage *= 1.25f;
             }
         }
 

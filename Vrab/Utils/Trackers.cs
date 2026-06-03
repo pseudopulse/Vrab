@@ -79,6 +79,7 @@ namespace Vrab.Utils {
         }
         public TeamIndex userIndex;
         public TargetType targetType;
+        public HurtBox targetHB;
         public override void Start()
         {
             base.Start();
@@ -107,11 +108,14 @@ namespace Vrab.Utils {
             }
 
             search.teamMaskFilter = mask;
-            search.sortMode = BullseyeSearch.SortMode.DistanceAndAngle;
+            search.sortMode = BullseyeSearch.SortMode.Angle;
             search.RefreshCandidates();
             search.FilterOutGameObject(base.gameObject);
             IEnumerable<HurtBox> boxes = search.GetResults();
-            return boxes.FirstOrDefault()?.transform ?? null;
+            HurtBox box = boxes.FirstOrDefault();
+            targetHB = box;
+
+            return box?.transform ?? null;
         }
     }
 

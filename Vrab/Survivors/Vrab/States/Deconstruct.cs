@@ -21,6 +21,7 @@ namespace Vrab.States {
             base.OnEnter();
 
             beam = GameObject.Instantiate(Survivor.DeconstructBeam);
+            beam.SetActive(false);
             start = beam.GetComponent<ChildLocator>().FindChild("Origin");
             end = beam.GetComponent<ChildLocator>().FindChild("Target");
 
@@ -58,33 +59,54 @@ namespace Vrab.States {
                 target = tracker.target.GetComponent<HurtBox>();
             }
 
-            if (!target || !base.characterMotor.isGrounded && base.isAuthority) {
+            if (!target || meter.drifting && base.isAuthority) {
                 outer.SetNextStateToMain();
                 return;
             }
 
             if (target) {
-                targetPosition = target.transform.position;
+                if (target.healthComponent && target.teamIndex == GetTeam()) {
+                    if (meter.Data <= 0f) {
+                        outer.SetNextStateToMain();
+                        return;
+                    }
+                }
+
                 if (target.healthComponent && !target.healthComponent.alive) {
                     outer.SetNextStateToMain();
                     return;
                 }
+            }
+
+            beam.SetActive(true);
+
+            if (target) {
+                targetPosition = target.transform.position;
                 
                 if (timer.Tick() && target.healthComponent) {
-                    DamageInfo info = new();
-                    info.damage = base.damageStat * damageCoeff;
-                    info.attacker = base.gameObject;
-                    info.crit = base.RollCrit();
-                    info.position = end.position;
-                    info.procCoefficient = 1f;
-                    info.damageColorIndex = DamageColorIndex.Default;
+                    if (target.teamIndex == GetTeam()) {
+                        meter.SpendData(7 * timer.duration);
 
-                    meter.AddData(7f / ticksPerSecond);
+                        if (NetworkServer.active) {
+                            target.healthComponent.HealFraction(0.065f * (1f / ticksPerSecond), default);
+                        }
+                    }
+                    else {
+                        DamageInfo info = new();
+                        info.damage = base.damageStat * damageCoeff;
+                        info.attacker = base.gameObject;
+                        info.crit = base.RollCrit();
+                        info.position = end.position;
+                        info.procCoefficient = 1f;
+                        info.damageColorIndex = DamageColorIndex.Default;
 
-                    if (NetworkServer.active) {
-                        target.healthComponent.TakeDamage(info);
-                        GlobalEventManager.instance.OnHitEnemy(info, target.healthComponent.body.gameObject);
-                        GlobalEventManager.instance.OnHitAll(info, target.healthComponent.body.gameObject);
+                        meter.AddData(7f / ticksPerSecond);
+
+                        if (NetworkServer.active) {
+                            target.healthComponent.TakeDamage(info);
+                            GlobalEventManager.instance.OnHitEnemy(info, target.healthComponent.body.gameObject);
+                            GlobalEventManager.instance.OnHitAll(info, target.healthComponent.body.gameObject);
+                        }
                     }
 
                     AkSoundEngine.PostEvent(Events.Play_nullifier_attack1_explode, end.gameObject);

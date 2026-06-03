@@ -127,31 +127,6 @@ namespace Vrab.Utils
         }
 
         /// <summary>
-        /// Adds a timed buff to a body if a Dot for it does not exist, else inflicts said dot on the specified body.
-        /// </summary>
-        /// <param name="buff">The buffdef to apply to the body, or find the dotcontroller of.</param>
-        /// <param name="duration">The duration of the buff or dot.</param>
-        /// <param name="stackCount">The amount of buff stacks to apply.</param>
-        /// <param name="body">The body to apply the buff or dot to.</param>
-        public static void AddBuffAndDot(BuffDef buff, float duration, int stackCount, RoR2.CharacterBody body)
-        {
-            if (!NetworkServer.active) { return; }
-
-            RoR2.DotController.DotIndex index = (RoR2.DotController.DotIndex)Array.FindIndex(DotController.dotDefs, (dotDef) => dotDef.associatedBuff == buff);
-            for (int y = 0; y < stackCount; y++)
-            {
-                if (index != DotController.DotIndex.None)
-                {
-                    DotController.InflictDot(body.gameObject, body.gameObject, index, duration, 0.25f);
-                }
-                else
-                {
-                    body.AddTimedBuff(buff.buffIndex, duration);
-                }
-            }
-        }
-
-        /// <summary>
         /// Finds the associated DotController from a buff, if applicable.
         /// </summary>
         /// <param name="buff">The buff to check all dots against.</param>

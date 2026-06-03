@@ -3,14 +3,16 @@ using R2API.Networking.Interfaces;
 
 namespace Vrab {
     public class TargetTracker : HurtboxTracker {
+        public DataMeter meter;
         public override void Start()
         {
             base.targetingIndicatorPrefab = Survivor.TargetPainter;
-            base.maxSearchAngle = 30f;
+            base.maxSearchAngle = 15f;
             base.maxSearchDistance = 70f;
-            base.targetType = TargetType.Enemy;
+            base.targetType = TargetType.All;
             base.userIndex = TeamIndex.Player;
             base.Start();
+            meter = GetComponent<DataMeter>();
         }
     }
 
