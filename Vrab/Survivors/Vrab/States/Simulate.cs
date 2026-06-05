@@ -41,7 +41,7 @@ namespace Vrab.States {
                 float hp = box.healthComponent.body.baseMaxHealth;
                 float data = Math.Clamp(Util.Remap(hp, minHealth, maxHealth, minData, maxData), minData, maxData);
 
-                if (meter.Data < data || box.healthComponent.body.bodyFlags.HasFlag(CharacterBody.BodyFlags.Ungrabbable)) {
+                if (meter.Data < data) {
                     outer.SetNextStateToMain();
                     return;
                 }

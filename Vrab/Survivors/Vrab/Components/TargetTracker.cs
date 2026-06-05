@@ -7,7 +7,7 @@ namespace Vrab {
         public override void Start()
         {
             base.targetingIndicatorPrefab = Survivor.TargetPainter;
-            base.maxSearchAngle = 15f;
+            base.maxSearchAngle = 30f;
             base.maxSearchDistance = 70f;
             base.targetType = TargetType.All;
             base.userIndex = TeamIndex.Player;

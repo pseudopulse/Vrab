@@ -10,6 +10,7 @@ namespace Vrab.States {
         public float y = 0f;
         public float timeSinceGrounded = 0f;
         public Animator anim;
+        public bool requireTap = false;
 
         public override void OnEnter()
         {
@@ -26,16 +27,22 @@ namespace Vrab.States {
 
             if (!base.isAuthority) return;
 
-            if (base.inputBank.jump.down && base.characterMotor.isGrounded) {
+            if (base.characterMotor.isGrounded) {
                 timer = 1f;
                 timeSinceGrounded = 0f;
-                base.characterMotor.Motor.ForceUnground();
+                requireTap = true;
+
+                if (requireTap && base.inputBank.jump.justPressed) {
+                    base.characterMotor.Motor.ForceUnground();
+                }
             }
 
-            if (base.inputBank.jump.down && (meter.Data > 0 || timeSinceGrounded <= 0.7f)) {
+            if ((!requireTap ? base.inputBank.jump.down : base.inputBank.jump.justPressed) && (meter.Data > 0 || timeSinceGrounded <= 0.7f)) {
                 if (!vfx.isPlaying) {
                     vfx.Play();
                 }
+
+                requireTap = false;
 
                 timeSinceGrounded += Time.fixedDeltaTime;
                 if (timeSinceGrounded >= 1f) {

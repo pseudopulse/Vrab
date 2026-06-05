@@ -1,3 +1,13 @@
+# 1.1.3
+- Fixed all bosses being untargetable for Simulate (im dumb and was checking the ungrabbable flag to catch solus wing canisters and that included all bosses)
+
+# 1.1.2
+- Deconstruct now massively prioritizes enemies over allies unless the ally is at critical health (under 30% max hp)
+- Pelagic Drift no longer makes you keep bouncing off the ground if you have space still held down when landing
+
+# 1.1.1
+- Reverted targeting angle change
+
 # 1.1.0
 - Deconstruct now heals allies at a rate of 5% max health per second in exchange for 7% data per second
 - Deconstruct is now properly only disabled when drifting, not just for being airborne in general

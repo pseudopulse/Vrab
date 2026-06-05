@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 using R2API.Networking.Interfaces;
+using static RoR2.BullseyeSearch;
 
 namespace Vrab.Utils {
     [RequireComponent(typeof(InputBankTest))]
@@ -112,6 +113,20 @@ namespace Vrab.Utils {
             search.RefreshCandidates();
             search.FilterOutGameObject(base.gameObject);
             IEnumerable<HurtBox> boxes = search.GetResults();
+
+            Func<CandidateInfo, float> sorter = search.GetSorter();
+            Func<HurtBox, CandidateInfo> selector = search.GetSelector();
+
+            boxes = boxes.OrderBy(x => {
+                float importance = sorter(selector(x));
+
+                if (x.healthComponent.body.teamComponent.teamIndex == body.teamComponent.teamIndex && x.healthComponent.healthFraction > 0.3f) {
+                    importance += 100000f;
+                }
+
+                return importance;
+            });
+
             HurtBox box = boxes.FirstOrDefault();
             targetHB = box;
 
