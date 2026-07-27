@@ -70,7 +70,7 @@ namespace Vrab.States
                         ProjectileManager.instance.FireProjectile(info);
                     }
 
-                    if (base.isAuthority) {
+                    if (base.isAuthority && !this.HasBuff(Survivor.bdOverload)) {
                         meter.AddData(dataPerProjectile);
                     }
                 }

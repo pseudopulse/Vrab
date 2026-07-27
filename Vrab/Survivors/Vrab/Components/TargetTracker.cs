@@ -29,7 +29,8 @@ namespace Vrab {
         }
         void ISerializableObject.Deserialize(NetworkReader reader)
         {
-            target = reader.ReadHurtBoxReference().ResolveHurtBox().transform;
+            HurtBox box = reader.ReadHurtBoxReference().ResolveHurtBox();
+            target = box != null ? box.transform : null;
             tracker = reader.ReadGameObject();
         }
 

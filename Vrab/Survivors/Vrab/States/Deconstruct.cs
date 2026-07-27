@@ -33,7 +33,9 @@ namespace Vrab.States {
 
             timer.duration = 1f / (ticksPerSecond * base.attackSpeedStat);
             
-            end.position = tracker.target.position;
+            if (tracker.target) {
+                end.position = tracker.target.position;
+            }
         }
         public override void Update()
         {
@@ -85,7 +87,9 @@ namespace Vrab.States {
                 
                 if (timer.Tick() && target.healthComponent) {
                     if (target.teamIndex == GetTeam()) {
-                        meter.SpendData(7 * timer.duration);
+                        if (!this.HasBuff(Survivor.bdOverload)) {
+                            meter.SpendData(7 * timer.duration);
+                        }
 
                         if (NetworkServer.active) {
                             target.healthComponent.HealFraction(0.065f * (1f / ticksPerSecond), default);
@@ -100,7 +104,9 @@ namespace Vrab.States {
                         info.procCoefficient = 1f;
                         info.damageColorIndex = DamageColorIndex.Default;
 
-                        meter.AddData(7f / ticksPerSecond);
+                        if (!this.HasBuff(Survivor.bdOverload)) {
+                            meter.AddData(10f / ticksPerSecond);
+                        }
 
                         if (NetworkServer.active) {
                             target.healthComponent.TakeDamage(info);

@@ -27,12 +27,15 @@ namespace Vrab {
 
         public static BepInEx.Logging.ManualLogSource ModLogger;
         public static AssetBundle Assets;
+        public static ConfigFile config;
 
         public void Awake() {
             // set logger
             ModLogger = Logger;
 
             Assets = AssetBundle.LoadFromFile(Assembly.GetExecutingAssembly().Location.Replace("Vrab.dll", "vrabassets"));
+
+            config = Config;
 
             SwapAllShaders(Assets);
             ScanTypes<SkillBase>((x) => x.Init());

@@ -3,6 +3,7 @@ using KinematicCharacterController;
 using Vrab.Utils.Components;
 using ThreeEyedGames;
 using Vrab.States;
+using UnityEngine.Rendering.PostProcessing;
 
 namespace Vrab {
     public class Survivor : SurvivorBase<Survivor>
@@ -40,6 +41,9 @@ namespace Vrab {
         public static GameObject AnalysisBoltProjectile;
         public static BuffDef bdOverload;
         public static GameObject RefreshEffect;
+        public static GameObject IterateWard;
+        public static GameObject IterateEffect;
+        public static List<FogDamageController> fogDamageControllers = new();
         
         public override void LoadAssets()
         {
@@ -91,7 +95,12 @@ namespace Vrab {
 
             ReplaceSkills(locator.primary, Skills.Deconstruct.instance.skillDef);
             ReplaceSkills(locator.secondary, Skills.Analyze.instance.skillDef);
-            ReplaceSkills(locator.utility, Skills.Refresh.instance.skillDef);
+            if (Main.config.Bind<bool>("Configuration", "Enable Old Utility", false, "Enables the old Refresh utility from before 1.2.0").Value) {
+                ReplaceSkills(locator.utility, Skills.Iterate.instance.skillDef, Skills.RefreshOld.instance.skillDef);
+            }
+            else {
+                ReplaceSkills(locator.utility, Skills.Iterate.instance.skillDef);
+            }
             ReplaceSkills(locator.special, Skills.Simulate.instance.skillDef);
 
             "KEYWORD_DATA".Add("""
@@ -103,7 +112,7 @@ namespace Vrab {
             """);
 
             "KEYWORD_OVERLOAD".Add("""
-            <style=cKeywordName>Overload</style>Overloaded characters attack and move <style=cIsDamage>25%</style> faster while gaining <style=cIsDamage>25%</style> increased damage.
+            <style=cKeywordName>Overload</style>Overloaded characters attack <style=cIsDamage>35%</style> faster while gaining <style=cIsDamage>35%</style> increased damage. Overloaded simulations regenerate <style=cIsHealing>5% max health</style> each second and do not decay.
             """);
 
             // TARGET VFX
@@ -163,6 +172,57 @@ namespace Vrab {
             AnalysisBoltProjectile.GetComponent<ProjectileImpactExplosion>().explosionEffect = Paths.GameObject.VoidMegaCrabDeathBombletsExplosion;
             ContentAddition.AddProjectile(AnalysisBoltProjectile);
             PrefabAPI.RegisterNetworkPrefab(AnalysisBoltProjectile);
+
+            // ITERATE
+            IterateWard = PrefabAPI.InstantiateClone(Paths.GameObject.WarbannerWard, "IterateBuffWard");
+            IterateWard.GetComponent<BuffWard>().buffDef = bdOverload;
+            IterateWard.GetComponent<BuffWard>().animateRadius = true;
+            IterateWard.GetComponent<BuffWard>().radius = 30f;
+            IterateWard.GetComponent<BuffWard>().radiusCoefficientCurve = new(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
+            IterateWard.GetComponent<BuffWard>().expireDuration = 0.5f;
+            IterateWard.transform.localPosition = Vector3.zero;
+            IterateWard.transform.Find("mdlWarbanner").gameObject.SetActive(false);
+            IterateWard.GetComponentInChildren<MeshRenderer>().sharedMaterials = new Material[] {
+                Paths.Material.matITSafeWardAreaIndicator1, Paths.Material.matNullifierExplosionAreaIndicatorSoft
+            };
+            IterateWard.AddComponent<IterateSafeZone>();
+
+            IterateEffect = PrefabAPI.InstantiateClone(Paths.GameObject.VoidFogMildEffect, "IterateFog");
+            IterateEffect.RemoveComponent<DestroyOnTimer>();
+            IterateEffect.RemoveComponent<TemporaryVisualEffect>();
+            IterateEffect.RemoveComponent<LocalCameraEffect>();
+            IterateEffect.transform.Find("VisualEffect").transform.localScale = new Vector3(3f, 3f, 3f);
+            IterateEffect.transform.Find("VisualEffect").Find("Point Light").GetComponent<Light>().range = 15;
+            IterateEffect.transform.Find("VisualEffect").Find("Point Light").RemoveComponent<FlickerLight>();
+            IterateEffect.AddComponent<PostProcessFade>().volume = IterateEffect.GetComponent<PostProcessDuration>().ppVolume;
+            ContentAddition.AddNetworkedObject(IterateWard);
+
+            On.RoR2.FogDamageController.Start += (orig, self) => {
+                orig(self);
+                fogDamageControllers.Add(self);
+                fogDamageControllers.RemoveAll(x => x == null);
+            };
+        }
+
+        public class IterateSafeZone : MonoBehaviour, IZone
+        {
+            public BuffWard ward;
+            public void Start() {
+                ward = GetComponent<BuffWard>();
+
+                foreach (FogDamageController controller in fogDamageControllers) {
+                    controller.AddSafeZone(this);
+                }
+            }
+            public void OnDestroy() {
+                foreach (FogDamageController controller in fogDamageControllers) {
+                    controller.RemoveSafeZone(this);
+                }
+            }
+            public bool IsInBounds(Vector3 position)
+            {
+                return Vector3.Distance(position, base.transform.position) <= ward.calculatedRadius;
+            }
         }
 
         private string HologramName(On.RoR2.CharacterBody.orig_GetDisplayName orig, CharacterBody self)
@@ -192,15 +252,24 @@ namespace Vrab {
             orig(self);
 
             if (self.inventory && self.inventory.GetItemCount(SimulMarker) > 0) {
-                float timeToKill = 60f;
-                float degen = self.maxHealth / timeToKill;
-                self.regen = -degen;
+                if (self.HasBuff(bdOverload)) {
+                    self.regen = self.maxHealth * 0.05f;
+                }
+                else {
+                    float timeToKill = 60f;
+                    float degen = self.maxHealth / timeToKill;
+                    self.regen = -degen;
+                }
+            }
+            else {
+                if (self.HasBuff(bdOverload)) {
+                    self.regen += self.maxHealth * 0.05f;
+                }
             }
 
             if (self.HasBuff(bdOverload)) {
-                self.moveSpeed *= 1.25f;
-                self.attackSpeed *= 1.25f;
-                self.damage *= 1.25f;
+                self.attackSpeed *= 1.30f;
+                self.damage *= 1.30f;
             }
         }
 

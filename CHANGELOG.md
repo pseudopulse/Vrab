@@ -1,3 +1,17 @@
+# 1.2.0
+- Refresh utility skill is now behind a config and disabled by default
+- Replaced utility skill with Iterate
+- Overload is no longer applied to enemies
+- Simulated allies under the effects of Overload now regenerate 5% HP/s instead of decaying
+- Overload no longer gives movement speed
+- Overload attack speed and damage buffs raised to 30%
+- Simulated allies now teleport after you when far away
+- Deconstruct data generation buffed from 7% -> 10% per second
+
+# 1.1.4
+- Fixed issue where Vrab's presence in multiplayer would lag the shit out of the game only in certain modpacks somehow ???
+- Simulate no longer copies Transcendence
+
 # 1.1.3
 - Fixed all bosses being untargetable for Simulate (im dumb and was checking the ungrabbable flag to catch solus wing canisters and that included all bosses)
 

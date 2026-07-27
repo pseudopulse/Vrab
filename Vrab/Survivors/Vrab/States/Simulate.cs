@@ -81,6 +81,10 @@ namespace Vrab.States {
                             return false;
                         }
 
+                        if (def && def.itemIndex == RoR2Content.Items.ShieldOnly.itemIndex) {
+                            return false;
+                        }
+
                         if (def && def.ContainsTag(ItemTag.AIBlacklist)) {
                             return false;
                         }
@@ -92,6 +96,7 @@ namespace Vrab.States {
                         master.inventory.GiveItem(Survivor.SimulMarker);
                         master.inventory.GiveItem(RoR2Content.Items.BoostDamage, 5);
                         master.inventory.GiveItem(RoR2Content.Items.BoostHp, 10);
+                        master.inventory.GiveItem(RoR2Content.Items.MinionLeash);
                         var driver = master.AddComponent<AISkillDriver>();
                         driver.minDistance = 50f;
                         driver.maxDistance = float.PositiveInfinity;
