@@ -12,6 +12,7 @@ namespace Vrab.States {
         public TargetTracker tracker;
         public DataMeter meter;
         public static Dictionary<MasterIndex, GameObject> ReplacementMap = null;
+        public static GameObject[] LunarChimera;
         float data;
 
         public override void OnEnter()
@@ -20,9 +21,17 @@ namespace Vrab.States {
 
             if (ReplacementMap == null) {
                 ReplacementMap = new() {
-                    { MasterCatalog.FindMasterIndex("SolusWingMaster"), Paths.GameObject.RoboBallBossMaster },
-                    { MasterCatalog.FindMasterIndex("VoidRaidCrabMaster"), Paths.GameObject.VoidMegaCrabMaster }
+                    { MasterCatalog.FindMasterIndex("SolusWingMaster"), Paths.GameObject.VultureHunterMaster },
+                    { MasterCatalog.FindMasterIndex("SolusHeartMaster"), Paths.GameObject.VultureHunterMaster },
+                    { MasterCatalog.FindMasterIndex("VoidRaidCrabMaster"), Paths.GameObject.VoidMegaCrabMaster },
+                    { MasterCatalog.FindMasterIndex("BrotherMaster"), null },
+                    { MasterCatalog.FindMasterIndex("BrotherHurtMaster"), null },
+                    { MasterCatalog.FindMasterIndex("FalseSonBossMaster"), Paths.GameObject.HalcyoniteMaster },
+                    { MasterCatalog.FindMasterIndex("FalseSonBossLunarShardMaster"), Paths.GameObject.HalcyoniteMaster },
+                    { MasterCatalog.FindMasterIndex("FalseSonBossLunarShardBrokenMaster"), Paths.GameObject.HalcyoniteMaster },
                 };
+
+                LunarChimera = new GameObject[] { Paths.GameObject.LunarWispMaster, Paths.GameObject.LunarGolemMaster };
             }
 
             meter = GetComponent<DataMeter>();
@@ -33,7 +42,7 @@ namespace Vrab.States {
             if (tracker.target) {
                 HurtBox box = tracker.target.GetComponent<HurtBox>();
 
-                if (!box || !box.healthComponent) {
+                if (!box || !box.healthComponent || box.teamIndex == base.GetTeam()) {
                     outer.SetNextStateToMain();
                     return;
                 }
@@ -51,10 +60,16 @@ namespace Vrab.States {
 
                 if (ReplacementMap.ContainsKey(index)) {
                     masterPrefab = ReplacementMap[index];
+                    if (masterPrefab == null) {
+                        masterPrefab = LunarChimera.GetRandom();
+                    }
                     index = MasterCatalog.FindMasterIndex(masterPrefab);
                 }
 
-                if (GetSameIndexSummons(index) >= GetCap(box.healthComponent.body)) {
+                if (box.healthComponent.body.isChampion) {
+                    KillAllBosses();
+                }
+                else if (GetSameIndexSummons(index) >= GetCap(box.healthComponent.body)) {
                     outer.SetNextStateToMain();
                     return;
                 }
@@ -116,6 +131,7 @@ namespace Vrab.States {
                         drivers.Insert(0, driver);
                         master.GetComponent<BaseAI>().skillDrivers = drivers.ToArray();
                         master.AddComponent<SimulatedAIModifier>();
+                        master.AddComponent<SetDontDestroyOnLoad>();
                     };
 
                     EffectManager.SpawnEffect(Survivor.SummonHoloEffect, new EffectData {
@@ -156,6 +172,16 @@ namespace Vrab.States {
         public override InterruptPriority GetMinimumInterruptPriority()
         {
             return InterruptPriority.Stun;
+        }
+
+        public void KillAllBosses() {
+            foreach (CharacterMaster master in CharacterMaster.instancesList) {
+                if (master && master.minionOwnership && master.minionOwnership.ownerMaster == base.characterBody.master && master.GetBody()) {
+                    if (master.GetBody().isChampion) {
+                        master.TrueKill();
+                    }
+                }
+            }
         }
 
         public int GetSameIndexSummons(MasterIndex index) {

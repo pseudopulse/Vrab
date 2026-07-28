@@ -1,6 +1,6 @@
 {
 	"name": "Vrab",
-	"version_number": "1.2.0",
+	"version_number": "1.3.0",
 	"website_url": "https://github.com/pseudopulse/Vrab",
 	"description": "Adds the simulacrum vrab as a playable character.",
 	"dependencies": [

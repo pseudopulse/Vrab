@@ -1,4 +1,5 @@
 using System;
+using RoR2.CharacterAI;
 
 namespace Vrab.States {
     public class Deconstruct : BaseSkillState {
@@ -11,11 +12,13 @@ namespace Vrab.States {
         public const float damageCoeffPerSecond = 3f;
         public const float ticksPerSecond = 6f;
         public Timer timer = new(1f / ticksPerSecond, expires: true, resetOnExpire: true);
+        public Timer targetTimer = new(0.7f, expires: true, resetOnExpire: true);
         public TargetTracker tracker;
         public const float damageCoeff = damageCoeffPerSecond * (1f / ticksPerSecond);
         public Vector3 targetPosition;
         public DataMeter meter;
         public Transform prevTarget;
+        public List<BaseAI> simulations = new();
         public override void OnEnter()
         {
             base.OnEnter();
@@ -35,6 +38,12 @@ namespace Vrab.States {
             
             if (tracker.target) {
                 end.position = tracker.target.position;
+            }
+
+            foreach (CharacterMaster master in CharacterMaster.instancesList) {
+                if (master && master.minionOwnership && master.minionOwnership.ownerMaster == base.characterBody.master && master.GetBody()) {
+                    simulations.Add(master.GetComponent<BaseAI>());
+                }
             }
         }
         public override void Update()
@@ -103,6 +112,7 @@ namespace Vrab.States {
                         info.position = end.position;
                         info.procCoefficient = 1f;
                         info.damageColorIndex = DamageColorIndex.Default;
+                        info.damageType = DamageTypeCombo.GenericPrimary | DamageType.SlowOnHit;
 
                         if (!this.HasBuff(Survivor.bdOverload)) {
                             meter.AddData(10f / ticksPerSecond);
@@ -116,6 +126,14 @@ namespace Vrab.States {
                     }
 
                     AkSoundEngine.PostEvent(Events.Play_nullifier_attack1_explode, end.gameObject);
+                }
+
+                if (targetTimer.Tick() && target.healthComponent) {
+                    foreach (var sim in simulations) {
+                        if (sim) {
+                            sim.currentEnemy.gameObject = target.healthComponent.gameObject;
+                        }
+                    }
                 }
             }
 

@@ -1,3 +1,17 @@
+# 1.3.0
+- Deconstruct now forces simulations to target the hit enemy
+- Deconstruct now slows targets
+- Fixed Deconstruct not being tagged as primary skill damage
+- Allies copied from Simulate now follow you to the next stage if kept alive
+- Bosses can now only be simulated to a max of 1 across all boss types. Trying to simulate a different boss will kill the old one.
+- False Son and Mithrix can no longer be copied (False Son copies Halcyonite and Mithrix copies a random lunar chimera)
+- Solus Wing's copy is now the Alloy Hunter instead of Solus Control Unit
+- Solus Heart now copies the Alloy Hunter instead of spawning a dormant pre-fight Solus Heart that does nothing
+- Simulate no longer copies allies
+- Simulations now receive double the bonus from overload for stats except regen
+- Simulations have a different visual that is much less fucking blinding
+- Added an alternate primary, Dismantle (yes it has the same icon as Deconstruct for now idc enough to make a shitty icon for it today)
+
 # 1.2.0
 - Refresh utility skill is now behind a config and disabled by default
 - Replaced utility skill with Iterate

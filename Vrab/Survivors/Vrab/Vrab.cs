@@ -43,7 +43,9 @@ namespace Vrab {
         public static GameObject RefreshEffect;
         public static GameObject IterateWard;
         public static GameObject IterateEffect;
+        public static GameObject DismantleIndicator;
         public static List<FogDamageController> fogDamageControllers = new();
+        public static Material[] VrabHologramMat;
         
         public override void LoadAssets()
         {
@@ -93,7 +95,7 @@ namespace Vrab {
             "VRAB_PASSIVE_NAME".Add("Pelagic Drift");
             "VRAB_PASSIVE_DESC".Add("The Vrab has a <style=cIsUtility>slower falling speed</style> and can <style=cIsUtility>ascend</style> by <style=cIsDamage>holding jump</style>, at the cost of <style=cDeath>data</style>. You may not <style=cDeath>Deconstruct</style> while drifting.");
 
-            ReplaceSkills(locator.primary, Skills.Deconstruct.instance.skillDef);
+            ReplaceSkills(locator.primary, Skills.Deconstruct.instance.skillDef, Skills.Dismantle.instance.skillDef);
             ReplaceSkills(locator.secondary, Skills.Analyze.instance.skillDef);
             if (Main.config.Bind<bool>("Configuration", "Enable Old Utility", false, "Enables the old Refresh utility from before 1.2.0").Value) {
                 ReplaceSkills(locator.utility, Skills.Iterate.instance.skillDef, Skills.RefreshOld.instance.skillDef);
@@ -112,7 +114,7 @@ namespace Vrab {
             """);
 
             "KEYWORD_OVERLOAD".Add("""
-            <style=cKeywordName>Overload</style>Overloaded characters attack <style=cIsDamage>35%</style> faster while gaining <style=cIsDamage>35%</style> increased damage. Overloaded simulations regenerate <style=cIsHealing>5% max health</style> each second and do not decay.
+            <style=cKeywordName>Overload</style>Overloaded characters attack <style=cIsDamage>35%</style> faster while gaining <style=cIsDamage>35%</style> increased damage, simulations receive double this effect. Overloaded characters regenerate <style=cIsHealing>5% max health</style> each second and simulations do not decay.
             """);
 
             // TARGET VFX
@@ -148,7 +150,13 @@ namespace Vrab {
             ContentAddition.AddItemDef(SimulMarker);
 
             // SIMULATION VFX
-            matVrabHologram = Load<Material>("matVrabHologram.mat");
+            // matVrabHologram = Load<Material>("matVrabHologram.mat");
+            VrabHologramMat = new Material[] {
+                //Paths.Material.matVoidBarnacleExplosion,
+                Paths.Material.matNullifierSphereFresnelStars,
+                Paths.Material.matNullifierExplosionAreaIndicatorSoft,
+                Paths.Material.matNullifierDistortionLight,
+            };
             On.RoR2.CharacterBody.RecalculateStats += HologramDegen;
             On.RoR2.CharacterModel.UpdateRendererMaterials += HologramEffect;
             On.RoR2.CharacterBody.GetDisplayName += HologramName;
@@ -202,6 +210,87 @@ namespace Vrab {
                 fogDamageControllers.Add(self);
                 fogDamageControllers.RemoveAll(x => x == null);
             };
+
+            // DISMANTLE
+            DismantleIndicator = PrefabAPI.InstantiateClone(Paths.GameObject.NullifierPreBombGhost, "   DismantleIndicator");
+            DismantleIndicator.RemoveComponent<ProjectileGhostController>();
+            DismantleIndicator.RemoveComponent<VFXAttributes>();
+            DismantleIndicator.RemoveComponent<Rigidbody>();
+            DismantleIndicator.transform.Find("Sphere").GetComponent<ObjectScaleCurve>().useOverallCurveOnly = true;
+            DismantleIndicator.transform.Find("Sphere").GetComponent<ObjectScaleCurve>().overallCurve = new(new Keyframe(0f, 0f), new Keyframe(1f, 1f));
+            DismantleIndicator.transform.Find("Sphere").GetComponent<MeshRenderer>().sharedMaterials = new Material[] { Paths.Material.matNullifierBlackholeZoneAreaIndicator };
+            DismantleIndicator.transform.Find("Sphere").AddComponent<SphereCollider>().isTrigger = true;
+            DismantleIndicator.transform.Find("Sphere").AddComponent<DismantleIndicatorBehavior>();
+            var indicator = GameObject.Instantiate(DismantleIndicator.transform.Find("Sphere").gameObject, DismantleIndicator.transform.Find("Sphere"));
+            indicator.GetComponent<MeshRenderer>().sharedMaterial = Paths.Material.matNullifierExplosionAreaIndicatorHard;
+            indicator.transform.localPosition = Vector3.zero;
+            indicator.transform.localScale = Vector3.one;
+            var curve = indicator.GetComponent<ObjectScaleCurve>();
+            curve.overallCurve = new(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
+        }
+
+        public class DismantleIndicatorBehavior : MonoBehaviour {
+            private Dictionary<Collider, List<Renderer>> pairs = new Dictionary<Collider, List<Renderer>>();
+
+            private void OnTriggerEnter(Collider other)
+            {
+                AddIndictator(other);
+            }
+            private void OnTriggerExit(Collider other)
+            {
+                DelIndictator(other);
+            }
+            private void AddIndictator(Collider target)
+            {
+                if (pairs.ContainsKey(target))
+                {
+                    return;
+                }
+                CharacterModel characterModel = target.GetComponent<ModelLocator>()?.modelTransform?.GetComponent<CharacterModel>();
+                if (characterModel == null || characterModel.body.teamComponent.teamIndex == TeamIndex.Player)
+                {
+                    return;
+                }
+                List<Renderer> list = new List<Renderer>();
+                CharacterModel.RendererInfo[] baseRendererInfos = characterModel.baseRendererInfos;
+                for (int i = 0; i < baseRendererInfos.Length; i++)
+                {
+                    CharacterModel.RendererInfo rendererInfo = baseRendererInfos[i];
+                    if (!rendererInfo.ignoreOverlays)
+                    {
+                        list.Add(rendererInfo.renderer);
+                    }
+                }
+                if (list.Count > 0)
+                {
+                    pairs.Add(target, list);
+                }
+            }
+            private void DelIndictator(Collider target)
+            {
+                if (pairs.ContainsKey(target))
+                {
+                    pairs.Remove(target);
+                }
+            }
+            private void OnEnable()
+            {
+                OutlineHighlight.onPreRenderOutlineHighlight = (Action<OutlineHighlight>)Delegate.Combine(OutlineHighlight.onPreRenderOutlineHighlight, new Action<OutlineHighlight>(OnPreRenderOutlineHighlight));
+            }
+            private void OnDisable()
+            {
+                OutlineHighlight.onPreRenderOutlineHighlight = (Action<OutlineHighlight>)Delegate.Remove(OutlineHighlight.onPreRenderOutlineHighlight, new Action<OutlineHighlight>(OnPreRenderOutlineHighlight));
+            }
+            private void OnPreRenderOutlineHighlight(OutlineHighlight outlineHighlight)
+            {
+                foreach (List<Renderer> value in pairs.Values)
+                {
+                    foreach (Renderer item in value)
+                    {
+                        outlineHighlight.AddHighlight(item, Color.magenta);
+                    }
+                }
+            }
         }
 
         public class IterateSafeZone : MonoBehaviour, IZone
@@ -242,7 +331,8 @@ namespace Vrab {
             if (self.body && self.body.inventory && self.body.inventory.GetItemCount(SimulMarker) > 0) {
                 if (renderer is ParticleSystemRenderer) return;
 
-                renderer.sharedMaterial = matVrabHologram;
+                // renderer.sharedMaterials = matVrabHologram;
+                renderer.sharedMaterials = VrabHologramMat;
             }
             
         }
@@ -254,6 +344,8 @@ namespace Vrab {
             if (self.inventory && self.inventory.GetItemCount(SimulMarker) > 0) {
                 if (self.HasBuff(bdOverload)) {
                     self.regen = self.maxHealth * 0.05f;
+                    self.attackSpeed *= 1.60f;
+                    self.damage *= 1.60f;
                 }
                 else {
                     float timeToKill = 60f;
@@ -264,12 +356,9 @@ namespace Vrab {
             else {
                 if (self.HasBuff(bdOverload)) {
                     self.regen += self.maxHealth * 0.05f;
+                    self.attackSpeed *= 1.30f;
+                    self.damage *= 1.30f;
                 }
-            }
-
-            if (self.HasBuff(bdOverload)) {
-                self.attackSpeed *= 1.30f;
-                self.damage *= 1.30f;
             }
         }
 
