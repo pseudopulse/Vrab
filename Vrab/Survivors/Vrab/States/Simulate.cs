@@ -132,6 +132,7 @@ namespace Vrab.States {
                         master.GetComponent<BaseAI>().skillDrivers = drivers.ToArray();
                         master.AddComponent<SimulatedAIModifier>();
                         master.AddComponent<SetDontDestroyOnLoad>();
+                        master.AddComponent<CopyOwnerInventory>();
                     };
 
                     EffectManager.SpawnEffect(Survivor.SummonHoloEffect, new EffectData {

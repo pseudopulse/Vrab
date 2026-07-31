@@ -9,6 +9,9 @@ namespace Vrab {
     public class DataMeter : MonoBehaviour {
         public float Data = 0f;
         public float MaxData = 100f;
+        public float OverflowData = 0f;
+        public float MaxOverflowData = 75f;
+        public float OverflowDrainRate = 20f;
         public OverlayController controller;
         public TargetTracker tracker;
         public bool shouldPreview = false;
@@ -53,7 +56,26 @@ namespace Vrab {
                 shouldPreview = false;
                 previewAmount = 0f;
             }
+
+            float drain = OverflowDrainRate * Time.fixedDeltaTime;
+            if (OverflowData > drain && cb && cb.outOfCombat && cb.outOfDanger) {
+                if (Data + drain <= MaxData + (drain * 0.5f)) {
+                    Data += drain;
+                    if (Data > MaxData) {
+                        Data = MaxData;
+                    }
+
+                    OverflowData -= drain;
+                    if (OverflowData < 0) {
+                        OverflowData = 0;
+                    }
+                }
+            }
         }
+
+        // TODO !!!
+        // add UI for the overflow data on the meter
+        // make data bar interpolate instead of snapping
 
         public void OnDestroy() {
             if (controller != null) {
@@ -65,6 +87,12 @@ namespace Vrab {
         public void AddData(float amount) {
             Data += amount;
             if (Data > MaxData) {
+                float overflow = Data - MaxData;
+                OverflowData += overflow;
+                if (OverflowData > MaxOverflowData) {
+                    OverflowData = MaxOverflowData;
+                }
+
                 Data = MaxData;
             }
         }
@@ -82,11 +110,16 @@ namespace Vrab {
         public DataMeter meter;
         public HGTextMeshProUGUI text;
         public Image errorImage;
+        public Image overflow;
+        public float dataRenderPerct;
+        public float overflowRenderPerct;
+        public float smoothingTime = 0.2f;
 
         public void Start() {
             controller = GetComponent<ImageFillController>();
             errorImage = controller.images[2];
-            controller.images = controller.images.Where(x => x != errorImage).ToArray();
+            overflow = controller.images[3];
+            controller.images = controller.images.Where(x => x != errorImage && x != overflow).ToArray();
             text = GetComponentInChildren<HGTextMeshProUGUI>();
         }
         public void Update() {
@@ -102,10 +135,22 @@ namespace Vrab {
                 errorImage.fillAmount = 0f;
                 errorImage.enabled = false;
             }
+
+            float overflowTarget = meter.OverflowData / meter.MaxOverflowData;
+            float dataTarget = meter.Data / meter.MaxData;
+
+            overflowRenderPerct = Mathf.MoveTowards(overflowRenderPerct, overflowTarget, (Mathf.Abs(overflowTarget - overflowRenderPerct) / smoothingTime) * Time.fixedDeltaTime);
+            dataRenderPerct = Mathf.MoveTowards(dataRenderPerct, dataTarget, (Mathf.Abs(dataTarget - dataRenderPerct) / smoothingTime) * Time.fixedDeltaTime);
+
+            overflow.fillAmount = overflowRenderPerct;
             
+            if (dataRenderPerct > 0.995f) {
+                dataRenderPerct = 1f;
+            }
+
             controller.fillScalar = 1f;
-            controller.SetTValue(meter.Data / meter.MaxData);
-            text.text = $"{Mathf.Floor((meter.Data / meter.MaxData) * 100f)}%";
+            controller.SetTValue(dataRenderPerct);
+            text.text = $"{Mathf.Floor((dataRenderPerct) * 100f)}%";
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Vrab.States {
         public GameObject indicator;
         public float duration = 1.4f;
         public Vector3 target;
-        public float damageCoeff = 7f;
+        public float damageCoeff = 5.6f;
         public float radius = 6.5f;
         public GameObject tracerEffect => Paths.GameObject.VoidSurvivorBeamTracer;
         public GameObject blastEffect => Paths.GameObject.VoidRaidCrabTripleBeamExplosion;
@@ -50,10 +50,6 @@ namespace Vrab.States {
                         collided = true;
                         target = lastTarget;
                     }
-                }
-
-                if (!base.inputBank.skill1.down && !collided) {
-                    collided = true;
                 }
 
                 if (base.fixedAge >= duration) {

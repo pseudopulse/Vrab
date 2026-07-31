@@ -5,7 +5,7 @@ namespace Vrab.Skills {
     {
         public override string Name => "Dismantle";
 
-        public override string Description => "<style=cDeath>Slowing.</style> Charge up and strike an area for <style=cIsDamage>700% damage</style>. Landing the shot gathers <style=cIsUtility>data</style>.".AutoFormat();
+        public override string Description => "<style=cDeath>Slowing.</style> Charge up and strike an area for <style=cIsDamage>560% damage</style>. Landing the shot gathers <style=cIsUtility>data</style>.".AutoFormat();
 
         public override Type ActivationStateType => typeof(States.Dismantle);
 

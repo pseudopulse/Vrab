@@ -14,11 +14,11 @@ namespace Vrab {
         """
         thats so awesome we call that a vrab void crab what the fuck is that
 
-        < ! > Deconstruct cannot miss, but may only be used on the ground.
+        < ! > Deconstruct cannot miss, but cannot be used while drifting.
 
         < ! > Analyze can collect large amounts of data while clearing out dangerous projectiles.
 
-        < ! > Refresh can boost your holograms at the expense of boosting enemies caught in the blast.
+        < ! > Well-timed usage of Iterate can keep your simulations sustained while focusing their damage against the targets you need most.
         
         < ! > To offset Deconstruct's middling damage, utilize your data to construct holograms of powerful enemies with Simulate.
         
@@ -106,7 +106,7 @@ namespace Vrab {
             ReplaceSkills(locator.special, Skills.Simulate.instance.skillDef);
 
             "KEYWORD_DATA".Add("""
-            <style=cKeywordName>Data</style>Data is a resource used by skills.
+            <style=cKeywordName>Data</style>Data is a resource used by skills. Excess data can be stored as reserve up to 75% of maximum, and will be used to replenish missing data when out of danger and combat. Reserve data will not be used directly by skills.
             """);
 
             "KEYWORD_SIMULATION".Add("""
@@ -227,6 +227,22 @@ namespace Vrab {
             indicator.transform.localScale = Vector3.one;
             var curve = indicator.GetComponent<ObjectScaleCurve>();
             curve.overallCurve = new(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
+
+            //
+            On.RoR2.GlobalEventManager.OnHitEnemy += OnHitEnemy;
+        }
+
+        private void OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)
+        {   
+            if (damageInfo.attacker && damageInfo.attacker.TryGetComponent<CharacterBody>(out var body)) {
+                if (body.inventory && body.inventory.GetItemCount(SimulMarker) > 0) {
+                    if (damageInfo.procCoefficient > 0 && damageInfo.procCoefficient < 1) {
+                        damageInfo.procCoefficient = 1;
+                    }
+                }
+            }
+            
+            orig(self, damageInfo, victim);
         }
 
         public class DismantleIndicatorBehavior : MonoBehaviour {

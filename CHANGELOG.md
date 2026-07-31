@@ -1,3 +1,14 @@
+# 1.3.1
+- Simulations now copy your inventory in real time instead of when summoned
+- Simulations will now prefer to stay inside the radius of Iterate when it is active
+- Attacks from simulations with a proc coefficient higher than 0 but less than 1 are upgraded to 1
+- Dismantle's targeting reticle now only locks control if it hits an object instead of also when M1 is released (you can pause it and then move it again as long as it hasnt detonated yet)
+- Dismantle damage nerfed from 700% to 560%
+- Data UI now has smoothing for both the number and the visual
+- Data gained above the cap can now be stored as reserve, up to 75% of maximum. Reserve data can not be used directly by skills, but will be drained to replenish missing data when out of combat and danger
+- Vrab now has a shadow ???
+- Fixed Vrab's description having outdated info (talked about Deconstruct being ground-only, had a tip for Refresh instead of Iterate)
+
 # 1.3.0
 - Deconstruct now forces simulations to target the hit enemy
 - Deconstruct now slows targets
