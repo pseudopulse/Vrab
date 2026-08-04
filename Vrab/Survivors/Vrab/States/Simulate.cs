@@ -108,12 +108,16 @@ namespace Vrab.States {
                     };
 
                     summon.preSpawnSetupCallback = (master) => {
+                        if (!NetworkServer.active) {
+                            return;
+                        }
+
                         master.inventory.GiveItem(Survivor.SimulMarker);
-                        master.inventory.GiveItem(RoR2Content.Items.BoostDamage, 5);
-                        master.inventory.GiveItem(RoR2Content.Items.BoostHp, 10);
+                        master.inventory.GiveItem(RoR2Content.Items.BoostDamage, 10);
+                        master.inventory.GiveItem(RoR2Content.Items.BoostHp, 25);
                         master.inventory.GiveItem(RoR2Content.Items.MinionLeash);
                         var driver = master.AddComponent<AISkillDriver>();
-                        driver.minDistance = 50f;
+                        driver.minDistance = 35f;
                         driver.maxDistance = float.PositiveInfinity;
                         driver.moveTargetType = AISkillDriver.TargetType.CurrentLeader;
                         driver.shouldSprint = true;
@@ -131,8 +135,12 @@ namespace Vrab.States {
                         drivers.Insert(0, driver);
                         master.GetComponent<BaseAI>().skillDrivers = drivers.ToArray();
                         master.AddComponent<SimulatedAIModifier>();
-                        master.AddComponent<SetDontDestroyOnLoad>();
                         master.AddComponent<CopyOwnerInventory>();
+                        var ai = master.GetComponent<BaseAI>();
+                        ai.aimVectorDampTime = 0;
+                        ai.aimVectorMaxSpeed = float.PositiveInfinity;
+                        ai.fullVision = true;
+                        ai.neverRetaliateFriendlies = true;
                     };
 
                     EffectManager.SpawnEffect(Survivor.SummonHoloEffect, new EffectData {

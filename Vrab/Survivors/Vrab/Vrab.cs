@@ -4,6 +4,7 @@ using Vrab.Utils.Components;
 using ThreeEyedGames;
 using Vrab.States;
 using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.SceneManagement;
 
 namespace Vrab {
     public class Survivor : SurvivorBase<Survivor>
@@ -46,6 +47,7 @@ namespace Vrab {
         public static GameObject DismantleIndicator;
         public static List<FogDamageController> fogDamageControllers = new();
         public static Material[] VrabHologramMat;
+        public static bool isAnyPlayingVrab = false;
         
         public override void LoadAssets()
         {
@@ -230,6 +232,57 @@ namespace Vrab {
 
             //
             On.RoR2.GlobalEventManager.OnHitEnemy += OnHitEnemy;
+            On.RoR2.Projectile.ProjectileManager.InitializeProjectile += InitializeProjectile;
+            SceneManager.activeSceneChanged += OnSceneChange;
+            On.RoR2.CharacterMaster.OnInventoryChanged += OnChanged;
+        }
+
+        private void OnChanged(On.RoR2.CharacterMaster.orig_OnInventoryChanged orig, CharacterMaster self)
+        {
+            orig(self);
+
+            if (self.inventory.GetItemCount(Survivor.SimulMarker) > 0 && !self.GetComponent<SetDontDestroyOnLoad>()) {
+                self.AddComponent<SetDontDestroyOnLoad>();
+            }
+        }
+
+        private void OnSceneChange(Scene arg0, Scene arg1)
+        {
+            isAnyPlayingVrab = false;
+        }
+
+        private void InitializeProjectile(On.RoR2.Projectile.ProjectileManager.orig_InitializeProjectile orig, ProjectileController projectileController, FireProjectileInfo fireProjectileInfo)
+        {
+            orig(projectileController, fireProjectileInfo);
+
+            if (isAnyPlayingVrab) {
+                if (fireProjectileInfo.owner && fireProjectileInfo.owner.TryGetComponent<CharacterBody>(out var body)) {
+                    if (!body.inventory || body.inventory.GetItemCount(SimulMarker) <= 0 || fireProjectileInfo.procChainMask.mask != 0) {
+                        return;
+                    }
+
+                    if (projectileController.GetComponent<ProjectileTargetComponent>()) {
+                        return;
+                    }
+
+                    ProjectileTargetComponent target = projectileController.AddComponent<ProjectileTargetComponent>();
+                    ProjectileDirectionalTargetFinder finder = projectileController.AddComponent<ProjectileDirectionalTargetFinder>();
+                    ProjectileSteerTowardTarget steer = projectileController.AddComponent<ProjectileSteerTowardTarget>();
+
+                    finder.allowTargetLoss = true;
+                    finder.lookCone = 15;
+                    finder.lookRange = 60;
+                    finder.onlySearchIfNoTarget = true;
+
+                    steer.maxRotationSpeed = 180;
+                    steer.rotationSpeed = 180;
+                    steer.targetComponent = target;
+
+                    if (projectileController.TryGetComponent<ProjectileSimple>(out var simple)) {
+                        simple.updateAfterFiring = true;
+                    }
+                }
+            }
         }
 
         private void OnHitEnemy(On.RoR2.GlobalEventManager.orig_OnHitEnemy orig, GlobalEventManager self, DamageInfo damageInfo, GameObject victim)

@@ -50,8 +50,8 @@ namespace Vrab
             
             self.inventory.CopyItemsFrom(ownerInventory, ItemFilter);
             self.inventory.GiveItemPermanent(Survivor.SimulMarker);
-            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostDamage, 5);
-            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostHp, 10);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostDamage, 10);
+            self.inventory.GiveItemPermanent(RoR2Content.Items.BoostHp, 250);
             self.inventory.GiveItemPermanent(RoR2Content.Items.MinionLeash);
         }
 

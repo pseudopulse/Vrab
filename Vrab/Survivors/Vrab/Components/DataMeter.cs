@@ -73,10 +73,6 @@ namespace Vrab {
             }
         }
 
-        // TODO !!!
-        // add UI for the overflow data on the meter
-        // make data bar interpolate instead of snapping
-
         public void OnDestroy() {
             if (controller != null) {
                 HudOverlayManager.RemoveOverlay(controller);
@@ -114,7 +110,8 @@ namespace Vrab {
         public float dataRenderPerct;
         public float overflowRenderPerct;
         public float smoothingTime = 0.2f;
-
+        public CanvasGroup hud;
+        public float stopTrying = 0f;
         public void Start() {
             controller = GetComponent<ImageFillController>();
             errorImage = controller.images[2];
@@ -125,6 +122,16 @@ namespace Vrab {
         public void Update() {
             if (!meter) {
                 return;
+            }
+
+            if (hud) {
+                hud.alpha = 1;
+            }
+            else {
+                if (HUD.instancesList.Count >= 1 && stopTrying < 3f) {
+                    hud = HUD.instancesList[0].GetComponent<CanvasGroup>();
+                    stopTrying += Time.deltaTime;
+                }
             }
 
             if (meter.shouldPreview) {
@@ -146,6 +153,10 @@ namespace Vrab {
             
             if (dataRenderPerct > 0.995f) {
                 dataRenderPerct = 1f;
+            }
+
+            if (dataRenderPerct > 0.745f && dataRenderPerct < 0.75f) {
+                dataRenderPerct = 0.75f;
             }
 
             controller.fillScalar = 1f;

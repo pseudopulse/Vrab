@@ -101,6 +101,7 @@ namespace Vrab.States {
             base.FixedUpdate();
 
             meter.SpendData(7f * Time.fixedDeltaTime);
+            base.characterBody.outOfCombat = false;
 
             if (base.isAuthority) {
                 if (meter.Data <= 0f) {

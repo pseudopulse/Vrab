@@ -13,6 +13,8 @@ namespace Vrab {
             base.userIndex = TeamIndex.Player;
             base.Start();
             meter = GetComponent<DataMeter>();
+
+            Survivor.isAnyPlayingVrab = true;
         }
     }
 

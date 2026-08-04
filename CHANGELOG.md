@@ -1,3 +1,14 @@
+# 1.3.3
+- Simulations no longer have the aim damping that enemies have
+- Simulations now add a homing effect to any projectiles they fire (that arent already homing and arent item projectiles; the homing has a very tight targeting angle, is just there to remedy the fact lems and stuff cant fucking aim)
+- Simulations will now try to return to you at 35m instead of 50m
+- Simulations have significantly more health and a little more damage (they were very squishy due to not having ambient level scaling but also would be busted if they had ambient level scaling)
+- Fixed issue where simulations would appear as normal enemies to clients on every stage past the one they were created on (this also broke their healthbars)
+
+# 1.3.2
+- Iterate now forces you to be considered in combat for the entire duration it is active
+- Fixed incompat CleanestHUD that caused the data meter to look weird
+
 # 1.3.1
 - Simulations now copy your inventory in real time instead of when summoned
 - Simulations will now prefer to stay inside the radius of Iterate when it is active
