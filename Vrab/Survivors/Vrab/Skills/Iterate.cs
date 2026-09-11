@@ -5,7 +5,7 @@ namespace Vrab.Skills {
     {
         public override string Name => "Iterate";
 
-        public override string Description => "Plant into the ground, becoming <style=cIsUtility>untargetable</style> and projecting a field that <style=cIsUtility>overclocks</style> all allies within. All simulated allies are rebuilt at your location. <style=cDeath>The field drains data to maintain, and prevents data generation.</style>".AutoFormat();
+        public override string Description => "Plant into the ground, becoming <style=cIsUtility>untargetable</style> and projecting a field that <style=cIsUtility>overload</style> all allies within. All simulated allies are rebuilt at your location. <style=cDeath>The field drains data to maintain, and prevents data generation.</style>".AutoFormat();
 
         public override Type ActivationStateType => typeof(States.Iterate);
 

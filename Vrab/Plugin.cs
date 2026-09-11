@@ -28,6 +28,7 @@ namespace Vrab {
         public static BepInEx.Logging.ManualLogSource ModLogger;
         public static AssetBundle Assets;
         public static ConfigFile config;
+        public static bool DEBUG_INF_DATA = false;
 
         public void Awake() {
             // set logger

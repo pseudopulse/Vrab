@@ -5,6 +5,7 @@ using ThreeEyedGames;
 using Vrab.States;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
+using RoR2.CameraModes;
 
 namespace Vrab {
     public class Survivor : SurvivorBase<Survivor>
@@ -100,10 +101,10 @@ namespace Vrab {
             ReplaceSkills(locator.primary, Skills.Deconstruct.instance.skillDef, Skills.Dismantle.instance.skillDef);
             ReplaceSkills(locator.secondary, Skills.Analyze.instance.skillDef);
             if (Main.config.Bind<bool>("Configuration", "Enable Old Utility", false, "Enables the old Refresh utility from before 1.2.0").Value) {
-                ReplaceSkills(locator.utility, Skills.Iterate.instance.skillDef, Skills.RefreshOld.instance.skillDef);
+                ReplaceSkills(locator.utility, Skills.Iterate.instance.skillDef, Skills.RefreshOld.instance.skillDef, Skills.Operate.instance.skillDef);
             }
             else {
-                ReplaceSkills(locator.utility, Skills.Iterate.instance.skillDef);
+                ReplaceSkills(locator.utility, Skills.Iterate.instance.skillDef, Skills.Operate.instance.skillDef);
             }
             ReplaceSkills(locator.special, Skills.Simulate.instance.skillDef);
 
@@ -235,6 +236,8 @@ namespace Vrab {
             On.RoR2.Projectile.ProjectileManager.InitializeProjectile += InitializeProjectile;
             SceneManager.activeSceneChanged += OnSceneChange;
             On.RoR2.CharacterMaster.OnInventoryChanged += OnChanged;
+
+            OperateSkillHolder.Initialize();
         }
 
         private void OnChanged(On.RoR2.CharacterMaster.orig_OnInventoryChanged orig, CharacterMaster self)

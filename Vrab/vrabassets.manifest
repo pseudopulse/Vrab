@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 1282485924
+CRC: 2443928073
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: fe68b71047079927708864dc76b8f6a9
+    Hash: 37ffb61b02cd9a092371be86e85b8a93
   TypeTreeHash:
     serializedVersion: 2
     Hash: f68e15ecdc522a4b7bf6ba9a6b8e98db
@@ -203,6 +203,7 @@ Assets:
 - Assets/Vrab/mdl/assets/IDRSNull.asset
 - Assets/Vrab/hologram/idSimulMarker.asset
 - Assets/Vrab/effects/scan/ScanEffect.prefab
+- Assets/Vrab/ui/Operate.png
 - Assets/Vrab/ui/Deconstruct.png
 - Assets/Vrab/effects/swim/matVrabSwimRing.mat
 - Assets/Vrab/sdVrab.asset

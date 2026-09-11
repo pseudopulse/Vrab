@@ -120,7 +120,7 @@ namespace Vrab.Utils {
             boxes = boxes.OrderBy(x => {
                 float importance = sorter(selector(x));
 
-                if (x.healthComponent.body.teamComponent.teamIndex == body.teamComponent.teamIndex && x.healthComponent.healthFraction > 0.3f) {
+                if (x.healthComponent.body.teamComponent.teamIndex == body.teamComponent.teamIndex && body.inputBank.interact.down) {
                     importance += 100000f;
                 }
 

@@ -18,23 +18,32 @@ namespace Vrab {
         public float previewAmount = 0f;
         public bool drifting = false;
         public CharacterBody cb;
+        public GameObject crosshairObject;
 
         public void Start() {
-            controller = HudOverlayManager.AddOverlay(base.gameObject, new OverlayCreationParams() {
-                prefab = Survivor.OverlayMeter,
-                childLocatorEntry = "CrosshairExtras"
-            });
-            controller.onInstanceAdded += OnAdded;
-            tracker = GetComponent<TargetTracker>();
             cb = GetComponent<CharacterBody>();
+            if (cb.hasAuthority) {
+                controller = HudOverlayManager.AddGlobalOverlay(new OverlayCreationParams() {
+                    prefab = Survivor.OverlayMeter,
+                    childLocatorEntry = "CrosshairExtras"
+                });
+                controller.onInstanceAdded += OnAdded;
+            }
+
+            tracker = GetComponent<TargetTracker>();
         }
 
-        private void OnAdded(OverlayController controller, GameObject @object)
+        public void OnAdded(OverlayController controller, GameObject @object)
         {
             @object.GetComponent<CrosshairDataMeterSync>().meter = this;
+            crosshairObject = @object;
         }
 
         public void FixedUpdate() {
+            if (DEBUG_INF_DATA && Input.GetKeyDown(KeyCode.Space)) {
+                Data = MaxData;
+            }
+
             if (tracker && tracker.targetHB) {
                 HealthComponent hc = tracker.targetHB.healthComponent;
 

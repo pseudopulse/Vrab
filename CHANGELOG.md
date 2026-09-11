@@ -1,3 +1,6 @@
+# 1.4.0
+- Added an alternate utility, Operate
+
 # 1.3.3
 - Simulations no longer have the aim damping that enemies have
 - Simulations now add a homing effect to any projectiles they fire (that arent already homing and arent item projectiles; the homing has a very tight targeting angle, is just there to remedy the fact lems and stuff cant fucking aim)
